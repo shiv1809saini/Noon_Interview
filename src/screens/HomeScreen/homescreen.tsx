@@ -12,14 +12,15 @@ import {
   Pressable,
   Animated,
   ListRenderItem,
-  // ImageSourcePropType,
+  ListRenderItemInfo,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import useHomeScreen from '../../hooks/useHomeScreen';
 import styles, {CARD_ASPECT_RATIO, CARD_GUTTER, CARD_WIDTH} from './styles';
 import BannerCarousel from '../../components/bannerCarousel';
 
-// ---------- Domain Types ----------
 export type Product = {
   id: number | string;
   title: string;
@@ -41,14 +42,12 @@ export type RootStackParamList = {
   Cart: undefined;
 };
 
-// If your project uses a different navigator, swap the prop type accordingly:
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
-// Shape returned by your custom hook (adjust if your hook differs)
 export type HomeScreenHook = {
   filteredProducts: Product[];
   searchText: string;
-  cart: Array<CartItem> | Array<Product>; // support both shapes
+  cart: Array<CartItem> | Array<Product>;
   handleSearch: (text: string) => void;
   refreshing: boolean;
   onRefresh: () => void;
@@ -56,21 +55,18 @@ export type HomeScreenHook = {
   categories?: string[];
   applyCategory?: (category: string | null) => void;
   activeCategory?: string | null;
-  banners?: any;
+  banners?: Product[];
 };
 
-// ---------- Utility ----------
 const rupee = new Intl.NumberFormat('en-IN', {
   style: 'currency',
   currency: 'INR',
   maximumFractionDigits: 0,
 });
-
-// ---------- UI Helpers ----------
 type PressableScaleProps = {
   children: React.ReactNode;
   onPress?: () => void;
-  style?: object | object[];
+  style?: StyleProp<ViewStyle>;
 };
 const PressableScale: React.FC<PressableScaleProps> = ({
   children,
@@ -106,22 +102,21 @@ const SkeletonCard: React.FC = () => (
 );
 
 type EmptyStateProps = {query?: string};
-const EmptyState: React.FC<EmptyStateProps> = ({query}) => {
-  // const emptyImg: ImageSourcePropType = require('../../../assets/images/empty.png');
-  return (
-    <View style={styles.emptyWrap}>
-      {/* <Image source={emptyImg} style={styles.emptyImg} resizeMode="contain" /> */}
-      <Text style={styles.emptyTitle}>No results</Text>
-      <Text style={styles.emptySubtitle}>
-        {query
-          ? `We couldn’t find “${query}”.`
-          : 'Try adjusting your search or filters.'}
-      </Text>
-    </View>
-  );
-};
+const EmptyState: React.FC<EmptyStateProps> = ({query}) => (
+  <View style={styles.emptyWrap}>
+    <Text style={styles.emptyTitle}>No results</Text>
+    <Text style={styles.emptySubtitle}>
+      {query
+        ? `We couldn’t find “${query}”.`
+        : 'Try adjusting your search or filters.'}
+    </Text>
+  </View>
+);
 
-// ---------- Screen ----------
+type SkeletonItem = {__type: 'skeleton'; id: string};
+const isSkeleton = (x: Product | SkeletonItem): x is SkeletonItem =>
+  (x as SkeletonItem).__type === 'skeleton';
+
 const HomeScreen: React.FC<Props> = ({navigation}) => {
   const {
     filteredProducts,
@@ -131,15 +126,15 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
     refreshing,
     onRefresh,
     loading = false,
-    categories,
+    categories = [],
     applyCategory,
     activeCategory,
-    banners,
+    banners = [],
   } = useHomeScreen() as HomeScreenHook;
 
   const [focus, setFocus] = useState(false);
 
-  const data = useMemo<Product[]>(
+  const products = useMemo<Product[]>(
     () => filteredProducts ?? [],
     [filteredProducts],
   );
@@ -181,7 +176,6 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
     );
   };
 
-  // Cart count works for both shapes (CartItem[] | Product[])
   const cartCount =
     Array.isArray(cart) && cart.length > 0
       ? (cart as any[]).reduce<number>((acc, item) => {
@@ -198,11 +192,11 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
     <View style={styles.headerWrap}>
       <BannerCarousel
         banners={banners}
-        onPressBanner={product =>
+        onPressBanner={(product: Product) =>
           navigation.navigate('ProductDetails', {product})
         }
-        // height={180} // optional
       />
+
       <View style={[styles.searchContainer, focus && styles.searchFocused]}>
         <Image source={searchIcon} style={styles.searchIcon} />
         <TextInput
@@ -240,7 +234,7 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
       </View>
 
       {Array.isArray(categories) && categories.length > 0 && (
-        <FlatList
+        <FlatList<string>
           data={['All', ...categories]}
           keyExtractor={c => c}
           horizontal
@@ -252,7 +246,7 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
               <TouchableOpacity
                 style={[styles.chip, active && styles.chipActive]}
                 onPress={() =>
-                  c === 'All' ? applyCategory(null) : applyCategory(c)
+                  c === 'All' ? applyCategory?.(null) : applyCategory?.(c)
                 }>
                 <Text
                   style={[styles.chipText, active && styles.chipTextActive]}>
@@ -265,24 +259,34 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
       )}
     </View>
   );
+  const skeletons: SkeletonItem[] = useMemo(
+    () =>
+      Array.from({length: 8}, (_, i) => ({__type: 'skeleton', id: `s-${i}`})),
+    [],
+  );
+  const listData: Array<Product | SkeletonItem> = loading
+    ? skeletons
+    : products;
+
+  const keyExtractor = (item: Product | SkeletonItem) =>
+    isSkeleton(item) ? item.id : String(item.id);
+
+  const renderItem: ListRenderItem<Product | SkeletonItem> = info => {
+    if (isSkeleton(info.item)) return <SkeletonCard />;
+    const productInfo: ListRenderItemInfo<Product> = {
+      ...info,
+      item: info.item as Product,
+    };
+    return renderProductItem(productInfo);
+  };
 
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      <FlatList<Product | {id: string}>
-        data={
-          loading
-            ? Array.from({length: 8}).map((_, i) => ({id: `s-${i}`}))
-            : data
-        }
-        keyExtractor={item =>
-          (('id' in item ? item.id : Math.random()) as string).toString()
-        }
-        renderItem={
-          loading
-            ? ((() => <SkeletonCard />) as ListRenderItem<any>)
-            : renderProductItem
-        }
+      <FlatList<Product | SkeletonItem>
+        data={listData}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
         numColumns={2}
         columnWrapperStyle={{gap: CARD_GUTTER, paddingHorizontal: CARD_GUTTER}}
         contentContainerStyle={styles.listContent}

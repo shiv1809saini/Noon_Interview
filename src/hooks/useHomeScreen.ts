@@ -59,7 +59,6 @@ const useHomeScreen = () => {
     }
   }, []);
 
-  // --- central filter that mixes category + search
   const applyFilters = useCallback(() => {
     const q = searchText.trim().toLowerCase();
 

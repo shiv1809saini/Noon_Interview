@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 
 export type Product = {
-  id: number;
+  id: number | string;
   title: string;
   category: string;
   price: number;
@@ -21,7 +21,7 @@ export type Product = {
 type Props = {
   banners: Product[];
   onPressBanner?: (product: Product) => void;
-  height?: number; // allow override
+  height?: number;
   autoPlay?: boolean;
   autoPlayIntervalMs?: number;
 };
@@ -50,7 +50,6 @@ const BannerCarousel: React.FC<Props> = ({
 
   const viewConfigRef = useRef({viewAreaCoveragePercentThreshold: 60});
 
-  // simple auto-play
   useEffect(() => {
     if (!autoPlay || banners.length <= 1) return;
     const id = setInterval(() => {
@@ -94,7 +93,7 @@ const BannerCarousel: React.FC<Props> = ({
         viewabilityConfig={viewConfigRef.current}
         contentContainerStyle={{paddingVertical: 8}}
       />
-      {/* dots */}
+
       <View
         style={{
           position: 'absolute',

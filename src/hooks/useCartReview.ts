@@ -1,29 +1,46 @@
-import { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { clearCart } from '../redux/actions/actions';
+// src/hooks/useCartReview.ts
+import {useState} from 'react';
+import {useDispatch, useSelector, TypedUseSelectorHook} from 'react-redux';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {clearCart} from '../redux/actions/actions';
+import type {RootStackParamList} from './../router/types';
+import type {CartState, CartItem} from '../redux/reducers/types';
 
-const useCartReview = (navigation) => {
-  const [paymentMethod, setPaymentMethod] = useState('Credit Card'); 
-  const cart = useSelector((state) => state.cart.cart); 
-const dispatch = useDispatch();
- 
-  const subtotal = cart.reduce((sum, item) => {
-    const price = item.price || 0; 
-    const quantity = item.quantity || 1; 
+type RootState = {
+  cart: CartState;
+};
+
+type PaymentMethod = 'Credit Card' | 'PayPal';
+
+const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
+
+type NavProp = StackNavigationProp<RootStackParamList, 'CartReview'>;
+
+const useCartReview = (navigation: NavProp) => {
+  const [paymentMethod, setPaymentMethod] =
+    useState<PaymentMethod>('Credit Card');
+
+  const cart = useTypedSelector(state => state.cart.cart);
+
+  const dispatch = useDispatch();
+
+  const subtotal: number = cart.reduce((sum: number, item: CartItem) => {
+    const price = item.price ?? 0;
+    const quantity = item.quantity ?? 1;
     return sum + price * quantity;
   }, 0);
 
-  const tax = subtotal * 0.1; 
-  const total = subtotal + tax;
+  const tax: number = subtotal * 0.1;
+  const total: number = subtotal + tax;
 
-  const handlePlaceOrder = () => {
-    dispatch(clearCart()); 
-    navigation.navigate('ConfirmationScreen'); 
+  const handlePlaceOrder = (): void => {
+    dispatch(clearCart());
+    navigation.navigate('ConfirmationScreen');
   };
 
-  const togglePaymentMethod = () => {
-    setPaymentMethod((prev) =>
-      prev === 'Credit Card' ? 'PayPal' : 'Credit Card'
+  const togglePaymentMethod = (): void => {
+    setPaymentMethod(prev =>
+      prev === 'Credit Card' ? 'PayPal' : 'Credit Card',
     );
   };
 

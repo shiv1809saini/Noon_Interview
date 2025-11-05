@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useMemo, useState} from 'react';
 import {
   View,
   Text,
@@ -6,11 +6,27 @@ import {
   TouchableOpacity,
   SafeAreaView,
   Image,
+  StatusBar,
 } from 'react-native';
+import styles from './styles';
 import useCartReview from '../../hooks/useCartReview';
-import styles from './styles'
 
-const CartReviewScreen = ({ navigation }) => {
+type CartLine = {
+  id: number | string;
+  title: string;
+  category: string;
+  price: number;
+  thumbnail: string;
+  quantity: number;
+};
+
+const rupee = new Intl.NumberFormat('en-IN', {
+  style: 'currency',
+  currency: 'INR',
+  maximumFractionDigits: 2,
+});
+
+const CartReviewScreen: React.FC<{navigation: any}> = ({navigation}) => {
   const {
     cart,
     subtotal,
@@ -19,76 +35,179 @@ const CartReviewScreen = ({ navigation }) => {
     paymentMethod,
     handlePlaceOrder,
     togglePaymentMethod,
-  } = useCartReview(navigation);
+  } = useCartReview(navigation) as {
+    cart: CartLine[];
+    subtotal: number;
+    tax: number;
+    total: number;
+    paymentMethod: 'COD' | 'UPI' | 'Card' | string;
+    handlePlaceOrder: () => void;
+    togglePaymentMethod: () => void;
+  };
+
+  const [promo, setPromo] = useState<string>('');
+
+  const {delivery, savings} = useMemo(() => {
+    const mrpExtra = 500;
+    const save = cart.reduce(
+      (acc, it) => acc + mrpExtra * (it.quantity ?? 1),
+      0,
+    );
+    const del = subtotal > 499 ? 0 : 49;
+    return {delivery: del, savings: save};
+  }, [cart, subtotal]);
+
+  const renderItem = ({item}: {item: CartLine}) => {
+    const mrp = item.price + 500;
+    const offPct = Math.round(((mrp - item.price) / mrp) * 100);
+
+    return (
+      <View style={styles.itemCard}>
+        <Image source={{uri: item.thumbnail}} style={styles.itemThumb} />
+        <View style={styles.itemInfo}>
+          <Text style={styles.itemTitle} numberOfLines={2}>
+            {item.title}
+          </Text>
+          <Text style={styles.itemCat}>Category: {item.category}</Text>
+
+          <View style={styles.priceRow}>
+            <Text style={styles.price}>{rupee.format(item.price)}</Text>
+            <Text style={styles.mrp}>{rupee.format(mrp)}</Text>
+            <View style={styles.offPill}>
+              <Text style={styles.offTxt}>{offPct}% OFF</Text>
+            </View>
+          </View>
+
+          <Text style={styles.qtyLine}>
+            {item.quantity} × {rupee.format(item.price)}
+          </Text>
+        </View>
+
+        <Text style={styles.lineTotal}>
+          {rupee.format(item.price * item.quantity)}
+        </Text>
+      </View>
+    );
+  };
+
+  const ListFooter = (
+    <>
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Payment Method</Text>
+        <View style={styles.methodsRow}>
+          {(['COD', 'UPI', 'Card'] as const).map(m => {
+            const active = paymentMethod === m;
+            return (
+              <TouchableOpacity
+                key={m}
+                style={[styles.methodChip, active && styles.methodChipActive]}
+                onPress={togglePaymentMethod}
+                accessibilityRole="button"
+                accessibilityState={{selected: active}}>
+                <View style={[styles.radio, active && styles.radioActive]} />
+                <Text
+                  style={[styles.methodTxt, active && styles.methodTxtActive]}>
+                  {m}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+        <Text style={styles.methodHint}>
+          Tap to cycle through methods if selection doesn’t change.
+        </Text>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Have a promo code?</Text>
+        <View style={styles.promoRow}>
+          <TouchableOpacity activeOpacity={1} style={styles.promoInput}>
+            <Text style={styles.promoPlaceholder}>
+              {promo ? promo : 'Enter code'}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.applyBtn} onPress={() => {}}>
+            <Text style={styles.applyTxt}>Apply</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+      <View style={styles.summaryCard}>
+        <Text style={styles.sectionTitle}>Order Summary</Text>
+
+        <View style={styles.line}>
+          <Text style={styles.lineLabel}>Subtotal</Text>
+          <Text style={styles.lineValue}>{rupee.format(subtotal)}</Text>
+        </View>
+
+        <View style={styles.line}>
+          <Text style={styles.lineLabel}>Savings</Text>
+          <Text style={[styles.lineValue, styles.save]}>
+            − {rupee.format(savings)}
+          </Text>
+        </View>
+
+        <View style={styles.line}>
+          <Text style={styles.lineLabel}>Tax</Text>
+          <Text style={styles.lineValue}>{rupee.format(tax)}</Text>
+        </View>
+
+        <View style={styles.line}>
+          <Text style={styles.lineLabel}>Delivery</Text>
+          <Text style={styles.lineValue}>
+            {delivery === 0 ? 'Free' : rupee.format(delivery)}
+          </Text>
+        </View>
+
+        <View style={styles.divider} />
+
+        <View style={styles.line}>
+          <Text style={styles.totalLabel}>Total</Text>
+          <Text style={styles.totalValue}>
+            {rupee.format(total + delivery)}
+          </Text>
+        </View>
+      </View>
+    </>
+  );
+
+  const ListEmpty = (
+    <View style={styles.emptyWrap}>
+      <Text style={styles.emptyTitle}>No items in cart</Text>
+      <Text style={styles.emptySub}>Add items to review your order.</Text>
+      <TouchableOpacity
+        style={styles.shopBtn}
+        onPress={() => navigation.navigate('Home')}>
+        <Text style={styles.shopBtnTxt}>Shop now</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       <View style={styles.container}>
         <Text style={styles.header}>Cart Summary</Text>
 
-        <FlatList
+        <FlatList<CartLine>
           data={cart}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={it => String(it.id)}
+          renderItem={renderItem}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingBottom: 10,
-          }}
-          style={{
-            flexGrow: 0,
-            maxHeight: '65%',
-          }}
-          renderItem={({ item }) => {
-            const price = item.price || 0;
-            const quantity = item.quantity || 1;
-            return (
-              <View style={styles.item}>
-                <Image
-                  style={styles.thumbnail}
-                  source={{ uri: item.thumbnail }}
-                />
-                <View style={styles.detailsContainer}>
-                  <Text style={styles.itemTitle}>{item.title}</Text>
-                  <Text style={styles.itemCategory}>
-                    Category: {item.category}
-                  </Text>
-                  <View style={styles.priceContainer}>
-                    <Text style={styles.itemPrice}>₹{price.toFixed(2)}</Text>
-                    <Text style={styles.originalPrice}>
-                      ₹{(price + 500).toFixed(2)}
-                    </Text>
-                    <Text style={styles.discount}>50% OFF</Text>
-                  </View>
-                  <Text style={styles.itemDetails}>
-                    {quantity} x ₹{price.toFixed(2)}
-                  </Text>
-                </View>
-                <Text style={styles.itemTotal}>
-                  ₹{(price * quantity).toFixed(2)}
-                </Text>
-              </View>
-            );
-          }}
+          ListEmptyComponent={ListEmpty}
+          ListFooterComponent={ListFooter}
+          contentContainerStyle={{paddingBottom: 120}}
         />
 
-        <View style={styles.paymentContainer}>
-          <Text style={styles.paymentLabel}>Payment Method:</Text>
+        <View style={styles.footer}>
           <TouchableOpacity
-            style={styles.paymentButton}
-            onPress={togglePaymentMethod}
-          >
-            <Text style={styles.paymentButtonText}>{paymentMethod}</Text>
+            style={styles.placeOrderBtn}
+            onPress={handlePlaceOrder}
+            disabled={cart.length === 0}>
+            <Text style={styles.placeOrderTxt}>
+              Place Order · {rupee.format(total + delivery)}
+            </Text>
           </TouchableOpacity>
         </View>
-
-        <View style={styles.orderSummary}>
-          <Text style={styles.summaryText}>Subtotal: ₹{subtotal.toFixed(2)}</Text>
-          <Text style={styles.summaryText}>Tax: ₹{tax.toFixed(2)}</Text>
-          <Text style={styles.totalText}>Total: ₹{total.toFixed(2)}</Text>
-        </View>
-
-        <TouchableOpacity style={styles.placeOrderButton} onPress={handlePlaceOrder}>
-          <Text style={styles.placeOrderText}>Place Order</Text>
-        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );

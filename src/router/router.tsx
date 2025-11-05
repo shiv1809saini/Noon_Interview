@@ -1,60 +1,67 @@
-import React, { useState } from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
-import { NavigationContainer } from '@react-navigation/native';
+import React from 'react';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
 import HomeScreen from '../screens/HomeScreen/homescreen';
 import ProductDetails from '../screens/ProductDetailScreen/productDetails';
 import CartScreen from '../screens/CartScreen/cartScreen';
 import CartReviewScreen from '../screens/CartReviewScreen/cartReviewScreen';
-import ConfirmationScreen from '../screens/ConfirmationScreen/confirmationScreen'
+import ConfirmationScreen from '../screens/ConfirmationScreen/confirmationScreen';
+import TrackOrder from '../screens/TrackOrder/trackOrder';
+import {RootStackParamList} from './types'; // ✅
 
-const Stack = createStackNavigator();
+const Stack = createStackNavigator<RootStackParamList>(); // ✅
 
-const Router = () => {
-
+const Router: React.FC = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Home">
         <Stack.Screen
           name="Home"
-          options={{
-            title: 'Products', headerLeft: () => null, 
-            gestureEnabled: false,  
-          }}
           component={HomeScreen}
-        >
+          options={{
+            title: 'Products',
+            headerLeft: _props => null,
+            gestureEnabled: false,
+          }}
+        />
 
-        </Stack.Screen>
         <Stack.Screen
           name="ProductDetails"
-          options={{ title: 'Product Details' }}
           component={ProductDetails}
-        >
+          options={{headerShown: false}}
+        />
 
-        </Stack.Screen>
         <Stack.Screen
           name="Cart"
-          options={{ title: 'Your Cart' }}
           component={CartScreen}
-        >
+          options={{title: 'Your Cart'}}
+        />
 
-        </Stack.Screen>
         <Stack.Screen
           name="CartReview"
-          options={{ title: 'Cart Review' }}
           component={CartReviewScreen}
-        >
+          options={{title: 'Cart Review'}}
+        />
 
-        </Stack.Screen>
         <Stack.Screen
           name="ConfirmationScreen"
-          options={{
-            title: 'Confirmation Screen', headerLeft: () => null, 
-            gestureEnabled: false,  
-          }}
           component={ConfirmationScreen}
-        >
+          options={{
+            title: 'Confirmation Screen',
+            headerLeft: _props => null,
+            gestureEnabled: false,
+          }}
+        />
 
-        </Stack.Screen>
+        <Stack.Screen
+          name="TrackOrder"
+          component={TrackOrder}
+          options={{
+            title: 'Track Order',
+            headerLeft: _props => null,
+            gestureEnabled: false,
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
