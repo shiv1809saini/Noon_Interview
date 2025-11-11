@@ -82,7 +82,7 @@ const useHomeScreen = () => {
   useEffect(() => {
     const delay = setTimeout(() => {
       setDebouncedSearchText(searchText);
-    }, 400); // 👈 400ms debounce delay
+    }, 400);
 
     return () => clearTimeout(delay);
   }, [searchText]);

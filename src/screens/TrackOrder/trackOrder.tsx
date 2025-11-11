@@ -27,7 +27,6 @@ const STEPS: {key: StepKey; label: string}[] = [
 
 const PRIMARY = '#2563EB';
 const MUTED = '#9CA3AF';
-const BG = '#F3F4F6';
 const OK = '#10B981';
 
 const TrackOrder: React.FC<Props> = ({route, navigation}) => {

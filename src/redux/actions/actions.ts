@@ -1,22 +1,59 @@
-import { ADD_TO_CART, CLEAR_CART, REMOVE_FROM_CART, UPDATE_QUANTITY } from './actionTypes';
+import {
+  ADD_TO_CART,
+  CLEAR_CART,
+  REMOVE_FROM_CART,
+  UPDATE_QUANTITY,
+} from './actionTypes';
+import type {CartItem} from '../reducers/types';
 
-export const addToCart = (product) => ({
+export interface AddToCartAction {
+  type: typeof ADD_TO_CART;
+  payload: CartItem;
+}
+
+export interface RemoveFromCartAction {
+  type: typeof REMOVE_FROM_CART;
+  payload: number | string;
+}
+
+export interface UpdateQuantityAction {
+  type: typeof UPDATE_QUANTITY;
+  payload: {
+    productId: number | string;
+    quantity: number;
+  };
+}
+
+export interface ClearCartAction {
+  type: typeof CLEAR_CART;
+}
+
+export type CartActionTypes =
+  | AddToCartAction
+  | RemoveFromCartAction
+  | UpdateQuantityAction
+  | ClearCartAction;
+
+export const addToCart = (product: CartItem): AddToCartAction => ({
   type: ADD_TO_CART,
   payload: product,
 });
 
-export const removeFromCart = (productId) => ({
+export const removeFromCart = (
+  productId: number | string,
+): RemoveFromCartAction => ({
   type: REMOVE_FROM_CART,
   payload: productId,
 });
 
-export const updateQuantity = (productId, quantity) => ({
+export const updateQuantity = (
+  productId: number | string,
+  quantity: number,
+): UpdateQuantityAction => ({
   type: UPDATE_QUANTITY,
-  payload: { productId, quantity },
+  payload: {productId, quantity},
 });
 
-export const clearCart = () => ({
+export const clearCart = (): ClearCartAction => ({
   type: CLEAR_CART,
- 
 });
-

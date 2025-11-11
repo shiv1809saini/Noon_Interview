@@ -1,26 +1,21 @@
-
-import cartReducer from './reducers/cartReducer';
-import { combineReducers, createStore } from 'redux';
-import { persistStore, persistReducer } from 'redux-persist';
+import {combineReducers, legacy_createStore as createStore} from 'redux';
+import {persistStore, persistReducer, PersistConfig} from 'redux-persist';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import cartReducer from './reducers/cartReducer';
 
-
-const persistConfig = {
-  key: 'root',
-  storage: AsyncStorage,
-};
 const rootReducer = combineReducers({
   cart: cartReducer,
 });
+export type RootState = ReturnType<typeof rootReducer>;
 
-const persistedReducer = persistReducer(persistConfig, rootReducer);
+const persistConfig: PersistConfig<RootState> = {
+  key: 'root',
+  storage: AsyncStorage,
+  whitelist: ['cart'] as Array<keyof RootState>,
+};
 
-
-const store = createStore(persistedReducer);
-
-
-const persistor = persistStore(store);
-
-export { store, persistor };
-
+const persistedReducer = persistReducer<RootState>(persistConfig, rootReducer);
+export const store = createStore(persistedReducer);
+export type AppDispatch = typeof store.dispatch;
+export const persistor = persistStore(store);

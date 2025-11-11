@@ -25,7 +25,7 @@ export interface CartState {
 // --- Action interfaces ---
 export interface AddToCartAction {
   type: typeof ADD_TO_CART;
-  payload: Omit<CartItem, 'quantity'>; // product object (quantity added internally)
+  payload: Omit<CartItem, 'quantity'>;
 }
 
 export interface RemoveFromCartAction {
