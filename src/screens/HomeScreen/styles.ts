@@ -2,8 +2,8 @@ import {StyleSheet, Dimensions, Platform} from 'react-native';
 
 const {width} = Dimensions.get('window');
 export const CARD_GUTTER = 12;
-export const CARD_WIDTH = (width - CARD_GUTTER * 3) / 2; // 2 columns
-export const CARD_ASPECT_RATIO = 1; // square thumbnail
+export const CARD_WIDTH = (width - CARD_GUTTER * 3) / 2;
+export const CARD_ASPECT_RATIO = 1;
 
 const shadow = Platform.select({
   ios: {
@@ -158,12 +158,11 @@ export default StyleSheet.create({
     backgroundColor: '#ECFDF5',
   },
   discountText: {
-    fontSize: 11,
+    fontSize: 7,
     fontWeight: '800',
     color: '#059669',
   },
 
-  // Skeletons
   skeletonCard: {
     backgroundColor: '#fff',
     borderRadius: 16,
@@ -194,7 +193,6 @@ export default StyleSheet.create({
     backgroundColor: '#ECECEC',
   },
 
-  // Empty state
   emptyWrap: {
     alignItems: 'center',
     paddingTop: 40,

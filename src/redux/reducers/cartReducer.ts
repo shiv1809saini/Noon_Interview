@@ -1,10 +1,9 @@
-// src/redux/reducers/cartReducer.ts
 import {
   ADD_TO_CART,
   REMOVE_FROM_CART,
   UPDATE_QUANTITY,
 } from '../actions/actionTypes';
-import {CartState, CartActionTypes, CartItem} from './types';
+import {CartState, CartActionTypes} from './types';
 
 const initialState: CartState = {
   cart: [],
