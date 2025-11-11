@@ -19,7 +19,7 @@ const ConfirmationScreen: React.FC<Props> = ({navigation, route}) => {
   const orderId = route?.params?.orderId ?? '#ORD-12839';
   const eta = route?.params?.eta ?? '2–4 days';
 
-  const scale = useRef(new Animated.Value(0.7)).current;
+  const scale = useRef(new Animated.Value(0)).current;
   const fade = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -27,11 +27,12 @@ const ConfirmationScreen: React.FC<Props> = ({navigation, route}) => {
       Animated.spring(scale, {
         toValue: 1,
         useNativeDriver: true,
-        friction: 6,
+        friction: 5,
+        tension: 100,
       }),
       Animated.timing(fade, {
         toValue: 1,
-        duration: 450,
+        duration: 1000,
         easing: Easing.out(Easing.quad),
         useNativeDriver: true,
       }),

@@ -17,6 +17,7 @@ const useHomeScreen = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [searchText, setSearchText] = useState('');
+  const [debouncedSearchText, setDebouncedSearchText] = useState('');
   const [banners, setBanners] = useState<Product[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -60,8 +61,7 @@ const useHomeScreen = () => {
   }, []);
 
   const applyFilters = useCallback(() => {
-    const q = searchText.trim().toLowerCase();
-
+    const q = debouncedSearchText.trim().toLowerCase();
     let out = products;
 
     if (activeCategory && activeCategory !== 'All') {
@@ -77,11 +77,15 @@ const useHomeScreen = () => {
     }
 
     setFilteredProducts(out);
-  }, [products, activeCategory, searchText]);
+  }, [products, activeCategory, debouncedSearchText]);
 
-  const handleSearch = (text: string) => {
-    setSearchText(text);
-  };
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      setDebouncedSearchText(searchText);
+    }, 400); // 👈 400ms debounce delay
+
+    return () => clearTimeout(delay);
+  }, [searchText]);
 
   useEffect(() => {
     applyFilters();
@@ -90,6 +94,10 @@ const useHomeScreen = () => {
   useEffect(() => {
     fetchProductsAndBanners();
   }, []);
+
+  const handleSearch = (text: string) => {
+    setSearchText(text);
+  };
 
   const applyCategory = (category: string | null) => {
     setActiveCategory(category ?? null);
