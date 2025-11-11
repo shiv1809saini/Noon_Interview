@@ -38,7 +38,7 @@ export default function useProductDetails(product: Product) {
     [cart, product.id],
   );
 
-  const handleAddToCart = (quantity?: number) => {
+  const handleAddToCart = () => {
     dispatch(addToCart(product));
   };
 

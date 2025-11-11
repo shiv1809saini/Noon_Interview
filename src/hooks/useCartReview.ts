@@ -1,27 +1,24 @@
-// src/hooks/useCartReview.ts
-import {useState} from 'react';
+import {useCallback, useState} from 'react';
 import {useDispatch, useSelector, TypedUseSelectorHook} from 'react-redux';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {clearCart} from '../redux/actions/actions';
 import type {RootStackParamList} from './../router/types';
 import type {CartState, CartItem} from '../redux/reducers/types';
 
-type RootState = {
-  cart: CartState;
-};
+type RootState = {cart: CartState};
 
-type PaymentMethod = 'Credit Card' | 'PayPal';
+export type PaymentMethod = 'COD' | 'Card';
+
+const METHODS: PaymentMethod[] = ['COD', 'Card'];
 
 const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
 
 type NavProp = StackNavigationProp<RootStackParamList, 'CartReview'>;
 
 const useCartReview = (navigation: NavProp) => {
-  const [paymentMethod, setPaymentMethod] =
-    useState<PaymentMethod>('Credit Card');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('COD');
 
   const cart = useTypedSelector(state => state.cart.cart);
-
   const dispatch = useDispatch();
 
   const subtotal: number = cart.reduce((sum: number, item: CartItem) => {
@@ -38,11 +35,9 @@ const useCartReview = (navigation: NavProp) => {
     navigation.navigate('ConfirmationScreen');
   };
 
-  const togglePaymentMethod = (): void => {
-    setPaymentMethod(prev =>
-      prev === 'Credit Card' ? 'PayPal' : 'Credit Card',
-    );
-  };
+  const selectPaymentMethod = useCallback((m: PaymentMethod) => {
+    setPaymentMethod(prev => (prev === m ? prev : m));
+  }, []);
 
   return {
     cart,
@@ -51,7 +46,7 @@ const useCartReview = (navigation: NavProp) => {
     total,
     paymentMethod,
     handlePlaceOrder,
-    togglePaymentMethod,
+    selectPaymentMethod,
   };
 };
 

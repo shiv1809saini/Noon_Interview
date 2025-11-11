@@ -26,6 +26,8 @@ const rupee = new Intl.NumberFormat('en-IN', {
   maximumFractionDigits: 2,
 });
 
+type Payment = 'COD' | 'Card';
+
 const CartReviewScreen: React.FC<{navigation: any}> = ({navigation}) => {
   const {
     cart,
@@ -34,18 +36,16 @@ const CartReviewScreen: React.FC<{navigation: any}> = ({navigation}) => {
     total,
     paymentMethod,
     handlePlaceOrder,
-    togglePaymentMethod,
+    selectPaymentMethod,
   } = useCartReview(navigation) as {
     cart: CartLine[];
     subtotal: number;
     tax: number;
     total: number;
-    paymentMethod: 'COD' | 'UPI' | 'Card' | string;
+    paymentMethod: 'COD' | 'Card' | string;
     handlePlaceOrder: () => void;
-    togglePaymentMethod: () => void;
+    selectPaymentMethod: (m: Payment) => void;
   };
-
-  const [promo, setPromo] = useState<string>('');
 
   const {delivery, savings} = useMemo(() => {
     const mrpExtra = 500;
@@ -95,13 +95,13 @@ const CartReviewScreen: React.FC<{navigation: any}> = ({navigation}) => {
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Payment Method</Text>
         <View style={styles.methodsRow}>
-          {(['COD', 'UPI', 'Card'] as const).map(m => {
+          {(['COD', 'Card'] as const).map(m => {
             const active = paymentMethod === m;
             return (
               <TouchableOpacity
                 key={m}
                 style={[styles.methodChip, active && styles.methodChipActive]}
-                onPress={togglePaymentMethod}
+                onPress={() => selectPaymentMethod(m)}
                 accessibilityRole="button"
                 accessibilityState={{selected: active}}>
                 <View style={[styles.radio, active && styles.radioActive]} />
@@ -122,9 +122,7 @@ const CartReviewScreen: React.FC<{navigation: any}> = ({navigation}) => {
         <Text style={styles.sectionTitle}>Have a promo code?</Text>
         <View style={styles.promoRow}>
           <TouchableOpacity activeOpacity={1} style={styles.promoInput}>
-            <Text style={styles.promoPlaceholder}>
-              {promo ? promo : 'Enter code'}
-            </Text>
+            <Text style={styles.promoPlaceholder}>{'Enter code'}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.applyBtn} onPress={() => {}}>
             <Text style={styles.applyTxt}>Apply</Text>
