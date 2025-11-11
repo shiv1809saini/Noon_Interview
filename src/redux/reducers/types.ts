@@ -1,4 +1,3 @@
-// src/redux/types/cartTypes.ts
 import {
   ADD_TO_CART,
   REMOVE_FROM_CART,
@@ -7,7 +6,6 @@ import {
 
 export type ID = string | number;
 
-// Each cart item
 export interface CartItem {
   id: ID;
   title: string;
@@ -17,12 +15,10 @@ export interface CartItem {
   thumbnail?: string;
 }
 
-// The overall cart state shape
 export interface CartState {
   cart: CartItem[];
 }
 
-// --- Action interfaces ---
 export interface AddToCartAction {
   type: typeof ADD_TO_CART;
   payload: Omit<CartItem, 'quantity'>;

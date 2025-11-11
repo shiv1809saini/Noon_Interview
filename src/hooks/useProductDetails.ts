@@ -5,7 +5,7 @@ import {StackNavigationProp} from '@react-navigation/stack';
 import {addToCart, removeFromCart} from '../redux/actions/actions';
 import type {CartState, CartItem, ID} from '../redux/reducers/types';
 import type {RootStackParamList} from './../router/types';
-import type {AppDispatch} from '../redux/store'; // <-- import your store's dispatch type
+import type {AppDispatch} from '../redux/store';
 
 export type Product = {
   id: ID;

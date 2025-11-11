@@ -9,8 +9,6 @@ type RootState = {cart: CartState};
 
 export type PaymentMethod = 'COD' | 'Card';
 
-const METHODS: PaymentMethod[] = ['COD', 'Card'];
-
 const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
 
 type NavProp = StackNavigationProp<RootStackParamList, 'CartReview'>;
