@@ -3,8 +3,9 @@ import {useDispatch, useSelector, TypedUseSelectorHook} from 'react-redux';
 import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {addToCart, removeFromCart} from '../redux/actions/actions';
-import type {CartState, CartItem, ID} from '../redux//reducers/types';
+import type {CartState, CartItem, ID} from '../redux/reducers/types';
 import type {RootStackParamList} from './../router/types';
+import type {AppDispatch} from '../redux/store'; // <-- import your store's dispatch type
 
 export type Product = {
   id: ID;
@@ -19,17 +20,14 @@ export type Product = {
   description?: string;
 };
 
-type RootState = {
-  cart: CartState;
-};
+type RootState = {cart: CartState};
 
 const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
-
 type Nav = StackNavigationProp<RootStackParamList>;
 
 export default function useProductDetails(product: Product) {
   const navigation = useNavigation<Nav>();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   const cart = useTypedSelector(state => state.cart.cart);
 
@@ -39,7 +37,8 @@ export default function useProductDetails(product: Product) {
   );
 
   const handleAddToCart = () => {
-    dispatch(addToCart(product));
+    const item: CartItem = {...product, quantity: 1};
+    dispatch(addToCart(item));
   };
 
   const handleRemoveFromCart = () => {

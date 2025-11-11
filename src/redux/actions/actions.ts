@@ -5,28 +5,24 @@ import {
   UPDATE_QUANTITY,
 } from './actionTypes';
 import type {CartItem} from '../reducers/types';
+import type {Action} from 'redux';
 
-export interface AddToCartAction {
-  type: typeof ADD_TO_CART;
+export interface AddToCartAction extends Action<typeof ADD_TO_CART> {
   payload: CartItem;
 }
 
-export interface RemoveFromCartAction {
-  type: typeof REMOVE_FROM_CART;
+export interface RemoveFromCartAction extends Action<typeof REMOVE_FROM_CART> {
   payload: number | string;
 }
 
-export interface UpdateQuantityAction {
-  type: typeof UPDATE_QUANTITY;
+export interface UpdateQuantityAction extends Action<typeof UPDATE_QUANTITY> {
   payload: {
     productId: number | string;
     quantity: number;
   };
 }
 
-export interface ClearCartAction {
-  type: typeof CLEAR_CART;
-}
+export interface ClearCartAction extends Action<typeof CLEAR_CART> {}
 
 export type CartActionTypes =
   | AddToCartAction

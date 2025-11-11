@@ -1,6 +1,7 @@
 import {useSelector, useDispatch, TypedUseSelectorHook} from 'react-redux';
 import {removeFromCart, updateQuantity} from '../redux/actions/actions';
 import type {ID, CartItem, CartState} from './../redux/reducers/types';
+import {AppDispatch} from '../redux/store';
 
 type RootState = {
   cart: CartState;
@@ -10,7 +11,7 @@ const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
 
 const useCart = () => {
   const cart = useTypedSelector(state => state.cart.cart);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   const increaseQuantity = (productId: ID) => {
     const item = cart.find((it: CartItem) => it.id === productId);
